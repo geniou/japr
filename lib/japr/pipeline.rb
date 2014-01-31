@@ -109,8 +109,9 @@ module JAPR
     def collect
       begin
         @assets = YAML::load(@manifest).map! do |path|
-          File.open(File.join(@source, path)) do |file|
-            JAPR::Asset.new(file.read, File.basename(path))
+          full_path = File.join(@source, path)
+          File.open(full_path) do |file|
+            JAPR::Asset.new(file.read, File.basename(path), File.dirname(full_path))
           end
         end
       rescue Exception => e
@@ -186,7 +187,7 @@ module JAPR
     def gzip
       @assets.map! do |asset|
         gzip_content = Zlib::Deflate.deflate(asset.content)
-        [asset, JAPR::Asset.new(gzip_content, "#{asset.filename}.gz")]
+        [asset, JAPR::Asset.new(gzip_content, "#{asset.filename}.gz", asset.dirname)]
       end.flatten!
     end
 
